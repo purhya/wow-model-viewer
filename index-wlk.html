@@ -1,0 +1,33 @@
+<head>
+    <script src="./jquery-3.5.1.min.js"></script>
+	<script src="./viewer-wotlk.js"></script>
+	<script type="module" src="./index.js"></script>
+</head>
+<body>
+    <div id="model_3d" style="width: 512px; height: 512px; background: #555"></div>
+</body>
+<script type="module">
+	import {generateModels, modelingType} from './index.js'
+
+	// const character = {
+	//	 "race": 7,
+	//	 "gender": 1,
+	//	 "skin": 4,
+	//	 "face": 0,
+	//	 "hairStyle": 5,
+	//	 "hairColor": 5,
+	//	 "facialStyle": 5,
+	//	 "items": [[1, 1170], [3, 4925], [5, 9575], [6, 25235], [7, 2311], [8, 21154], [9, 14618], [10, 9534], [15, 17238], [21, 20379], [22, 28787]]
+	// };
+	// generateModels(1, `#model_3d`, character);
+
+	window.CONTENT_PATH = `http://localhost:3177/modelviewer/wrath/`
+	await generateModels(1, `#model_3d`, {type: modelingType.NPC, id: Number(location.hash.slice(1)) || 1350});
+	model.setAzimuth(-Math.PI * (105/180))
+	model.setZenith(Math.PI * (90/180))
+	model.method('resetAnimation')
+
+	model.onCompleted = async () => {
+		await model.toCenter(true)
+	}
+</script>

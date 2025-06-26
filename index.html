@@ -1,0 +1,200 @@
+<head>
+    <script>window.$ = window.jQuery = require('./jquery-3.5.1.min.js');</script>
+	<script src="./viewer-wotlk.js"></script>
+	<script type="module" src="./index.js"></script>
+</head>
+<body>
+    <div id="model_3d" style="width: 512px; height: 512px"></div>
+</body>
+<script type="module">
+	import {generateModels, modelingType} from './index.js'
+	const electron = require('electron')
+
+    const forceFullView = [
+        850,
+        1913,
+        2346,
+        3916,
+        6172,
+        6173,
+        7890,
+        7891,
+        7892,
+        8180,
+        8181,
+        9019,
+        9020,
+        9021,
+        9022,
+        11410,
+        14553,
+        6121,
+        6122,
+        6688,
+        7893,
+        16049,
+        16052,
+        16054,
+        16572,
+        17321,
+        19286,
+        19330,
+        19331,
+        19436,
+        16217,
+        15934,
+        18147,
+        19690,
+        19249,
+        20146,
+        7949,
+        25445,
+        26425,
+        26500,
+        26539,
+        26540,
+        24906,
+    ]
+    
+    const forceHalfView = [
+        10199,
+        7923,
+        4833,
+        15420,
+        1165,
+        18102,
+        18318,
+        18319,
+        18903,
+        18905,
+        18906,
+        18948,
+        18949,
+        18950,
+        18952,
+        18959,
+        18963,
+        18964,
+        18965,
+        19209,
+        19314,
+        19315,
+        19660,
+        19661,
+        19671,
+        19806,
+        20185,
+        20222,
+        20270,
+        20569,
+        20631,
+        20632,
+        20633,
+        20752,
+        20813,
+        20866,
+        20867,
+        21037,
+        21743,
+        21504,
+        8769,
+        9643,
+        10008,
+        15418,
+        15419,
+        19267,
+        19411,
+        22775,
+        17621,
+        16198,
+        7907,
+        19903,
+        19782,
+        16742,
+        18857,
+        19745,
+        20518,
+        17519,
+        20499,
+        21543,
+        5107,
+        23573,
+        23686,
+        23713,
+        23927,
+        23845,
+        24469,
+        24234,
+        24680,
+        24706,
+        24759,
+        24783,
+        24786,
+        24806,
+        24877,
+        24951,
+        24953,
+        24955,
+        24958,
+        24976,
+        25002,
+        25011,
+        26657,
+        27485,
+        27508,
+        28050,
+        28017,
+        28227,
+        31103,
+        31125,
+        31962,
+        17046,
+        17621,
+        24417,
+        26867,
+        24417,
+    ]
+
+	// const character = {
+	//	 "race": 7,
+	//	 "gender": 1,
+	//	 "skin": 4,
+	//	 "face": 0,
+	//	 "hairStyle": 5,
+	//	 "hairColor": 5,
+	//	 "facialStyle": 5,
+	//	 "items": [[1, 1170], [3, 4925], [5, 9575], [6, 25235], [7, 2311], [8, 21154], [9, 14618], [10, 9534], [15, 17238], [21, 20379], [22, 28787]]
+	// };
+	// generateModels(1, `#model_3d`, character);
+
+	window.CONTENT_PATH = `http://localhost:3177/modelviewer/wrath/`
+
+	electron.ipcRenderer.on('start-making-display', async (_event, id, type) => {
+        $('#model_3d').empty()
+
+        await generateModels(1, `#model_3d`, {type: modelingType.NPC, id})
+
+        // 野兽
+        if (type === 1) {
+            model.setAzimuth(-Math.PI * (120 / 180))
+            model.setZenith(Math.PI * (105 / 180))
+        }
+        else {
+            model.setAzimuth(-Math.PI * (105 / 180))
+            model.setZenith(Math.PI * (90 / 180))
+        }
+
+        model.method('resetAnimation')
+
+        model.onCompleted = async () => {
+            let captureOnEye = (type === 3 || type === 5 || type === 6 || type === 7)
+                && !forceFullView.includes(id)
+                || forceHalfView.includes(id)
+
+            await model.toCenter(captureOnEye)
+            let buffer = await model.outputBuffer()
+            model.destroy()
+            electron.ipcRenderer.send('end-making-display', id, buffer)
+        }
+	})
+</script>
