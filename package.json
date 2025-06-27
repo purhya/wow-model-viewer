@@ -10,7 +10,8 @@
 	"scripts": {
 		"prepublish": "npx -p typescript tsc index.js wow_model_viewer.js  --declaration --allowJs --emitDeclarationOnly --outDir types",
 		"test": "jest",
-		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand"
+		"test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand",
+		"server": "http-server ./"
 	},
 	"repository": {
 		"type": "git",
