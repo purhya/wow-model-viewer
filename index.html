@@ -1,6 +1,6 @@
 <head>
 	<script>window.$ = window.jQuery = require('./jquery-3.5.1.min.js');</script>
-	<script src="./viewer-wotlk.js"></script>
+	<script src="./viewer-wlk.js"></script>
 	<script type="module" src="./index.js"></script>
 </head>
 <body>
@@ -11,12 +11,7 @@
 	const electron = require('electron')
 
 	const IdMap = {
-		17535: 5563,
-		20609: 5563,
-		20076: 5562,
-		20162: 5562,
-		23504: 5562,
-		25152: 5562,
+		15787: 15786,
 	}
 
 	const forceFullView = [
@@ -64,6 +59,7 @@
 		26540,
 		24906,
         14552,
+		25750,
 	]
 	
 	const forceHalfView = [
@@ -166,6 +162,8 @@
 		24417,
 		6789,
 		10434,
+		11121,
+		338,
 	]
 
 	const beBeast = [
@@ -183,7 +181,14 @@
 		124192, //豺狼人
 		124173, //豺狼人
 		124186, //豺狼人
+		//123870,	//地狱卫士
 	]
+
+	// 以下经过了手工处理
+	// 110,
+	// 4907,
+	// 27028,
+	// 27049,
 
 	// const character = {
 	//	 "race": 7,
@@ -200,6 +205,14 @@
 	window.CONTENT_PATH = `http://localhost:3177/modelviewer/wrath/`
 
 	electron.ipcRenderer.on('start-making-display', async (_event, id, type) => {
+
+		// 清理上一个 model.
+		if (window.model) {
+			model.onCompleted = null
+			model.destroy()
+			model = null
+		}
+
 		$('#model_3d').empty()
 		await generateModels(1, `#model_3d`, {type: modelingType.NPC, id: IdMap[id] ?? id})
 
@@ -235,8 +248,7 @@
 
 			await model.toCenter(captureOnEye, eyeLow)
 			let buffer = await model.outputBuffer()
-			model.destroy()
-            model.onCompleted = null
+
 			electron.ipcRenderer.send('end-making-display', id, buffer)
 		}
 	})

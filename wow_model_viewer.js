@@ -258,32 +258,32 @@ class WowModelViewer extends ZamModelViewer {
 
             // 比较窄, 显示上面的部分.
             if (ratio < 1) {
-                // let horizontalAs = []
-                // let totalA = 0
+                let horizontalAs = []
+                let totalA = 0
 
-                // for (let y = 0; y < 512; y += 2) {
-                //     horizontalAs[y / 2] = 0
+                for (let y = 0; y < 512; y += 2) {
+                    horizontalAs[y / 2] = 0
 
-                //     for (let x = 0; x < 512; x += 2) {
-                //         let a = pixels[(y * 512 + x) * 4 + 3]
-                //         horizontalAs[y / 2] += a
-                //     }
-                // }
+                    for (let x = 0; x < 512; x += 2) {
+                        let a = pixels[(y * 512 + x) * 4 + 3]
+                        horizontalAs[y / 2] += a
+                    }
+                }
 
-                // horizontalAs.reverse()
-                // totalA = horizontalAs.reduce((a, b) => a + b, 0)
-                // let centerIndex = 0
-                // let sum = 0
+                horizontalAs.reverse()
+                totalA = horizontalAs.reduce((a, b) => a + b, 0)
+                let centerIndex = 0
+                let sum = 0
 
-                // for (let y = 0; y < horizontalAs.length; y++) {
-                //     sum += horizontalAs[y]
-                //     if (sum >= totalA / 2) {
-                //         centerIndex = y + 1
-                //         break
-                //     }
-                // }
+                for (let y = 0; y < horizontalAs.length; y++) {
+                    sum += horizontalAs[y]
+                    if (sum >= totalA / 2) {
+                        centerIndex = y + 1
+                        break
+                    }
+                }
         
-                let newHeight = Math.max(width, height / (eyeLow ? 1.5 : 2))//, centerIndex * 2 - top)
+                let newHeight = Math.max(width, height / (eyeLow ? 1.5 : 2), centerIndex * 2 - top)
                 bottom += newHeight - height
                 height = newHeight
             }
