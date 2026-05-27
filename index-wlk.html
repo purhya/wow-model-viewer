@@ -5,9 +5,13 @@
 </head>
 <body>
     <div id="model_3d" style="width: 512px; height: 512px; background: #555"></div>
+	<button>Output</button>
 </body>
 <script type="module">
 	import {generateModels, modelingType} from './index.js'
+
+	// 用于 web 版本测试
+	// http://localhost:3178/index-wlk.html
 
 	// const character = {
 	//	 "race": 7,
@@ -22,12 +26,30 @@
 	// generateModels(1, `#model_3d`, character);
 
 	window.CONTENT_PATH = `http://localhost:3177/modelviewer/wrath/`
-	await generateModels(1, `#model_3d`, {type: modelingType.NPC, id: Number(location.hash.slice(1)) || 1350});
+
+	let displayId = Number(location.hash.slice(1)) || 1350
+	await generateModels(1, `#model_3d`, {type: modelingType.NPC, id: displayId});
 	model.setAzimuth(-Math.PI * (105/180))
 	model.setZenith(Math.PI * (90/180))
 	model.method('resetAnimation')
+	model.forceTime = 1200
 
 	model.onCompleted = async () => {
+		await model.pr.promise
 		await model.toCenter(true)
+	}
+
+	document.querySelector('button').onclick = async () => {
+		let buffer = await model.outputArrayBuffer()
+		let blob = new Blob([buffer], { type: 'img/webp' })
+		let url = URL.createObjectURL(blob)
+		let a = document.createElement('a')
+
+		a.href = url
+		a.download = displayId + '.webp'
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
+		URL.revokeObjectURL(url)
 	}
 </script>

@@ -12974,65 +12974,87 @@
             return window.performance && window.performance.now ? window.performance.now() : Date.now()
         }
         draw(t) {
-			t = model.forceTime ?? t;
+            if (t > model.forceTime) {
+                t = model.forceTime // model. 重设时刻
+                model.pr.resolve()
+            }
+
             var e, i = this, s = i.context;
-            if (i.delta = .001 * (t - i.time),
-            i.time = t,
-            i.currFrame++,
-            this.doUpdateBounds && i.actors.length > 0) {
+            i.delta = .001 * (t - i.time);
+            i.time = t;
+            i.currFrame++;
+
+            if (this.doUpdateBounds && i.actors.length > 0) {
                 let[t,s] = [gi(), gi()];
+
                 for (e = 0; e < i.actors.length; ++e) {
                     const [r,n] = i.actors[e].getBounds();
                     r && wi(t, t, r),
                     n && yi(s, s, n)
                 }
+
                 const r = gi()
                   , n = gi();
                 vi(r, s, t),
                 Ei(n, t, r, .5);
+
                 let a = r[2]
                   , o = r[0]
                   , h = r[1];
+
                 const l = this.width / this.height
                   , u = 2 * Math.tan(this.fov / 2 * .0174532925)
                   , c = 1.2 * a / u
                   , d = 1.2 * o / (u * l);
-                this.distance = Math.max(Math.max(c, d), 2 * h) * 1.25   // model. 让其显示更大的区域, 稍后再纠正.
+
+                this.distance = Math.max(Math.max(c, d), 2 * h) * 1.3   // model. 让其显示更大的区域, 稍后再纠正
                 mi(this.translationFromModel, n[0], -n[2], 0),
                 this.doUpdateBounds = !1
             }
-            for (i.updateCamera(),
-            s.bindFramebuffer(s.FRAMEBUFFER, null),
-            s.viewport(0, 0, i.width, i.height),
-            s.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 0),
-            s.clear(s.COLOR_BUFFER_BIT | s.DEPTH_BUFFER_BIT),
-            i.bgTexture && i.program && (s.useProgram(i.program),
-            s.activeTexture(s.TEXTURE0),
-            s.bindTexture(s.TEXTURE_2D, i.bgTexture),
-            s.uniform1i(i.uTexture, 0),
-            s.uniform4f(i.uBGTransform, i.viewer.options.bgPosition[0] || 0, i.viewer.options.bgPosition[1] || 0, i.viewer.options.bgScale[0] || 1, i.viewer.options.bgScale[1] || 1),
-            i.options.backgroundRotatation && (s.uniform1f(i.uRotation, i.options.backgroundRotatation),
-            s.uniform2f(i.uResolution, i.width, i.height)),
-            s.bindBuffer(s.ARRAY_BUFFER, i.vb),
-            s.bindBuffer(s.ELEMENT_ARRAY_BUFFER, null),
-            s.enableVertexAttribArray(i.aPosition),
-            s.vertexAttribPointer(i.aPosition, 2, s.FLOAT, !1, 16, 0),
-            s.enableVertexAttribArray(i.aTexCoord),
-            s.vertexAttribPointer(i.aTexCoord, 2, s.FLOAT, !1, 16, 8),
-            s.depthMask(!1),
-            s.disable(s.CULL_FACE),
-            s.blendFunc(s.ONE, s.ZERO),
-            s.drawArrays(s.TRIANGLE_STRIP, 0, 4),
-            s.blendFunc(s.SRC_ALPHA, s.ONE_MINUS_SRC_ALPHA),
-            s.enable(s.CULL_FACE),
-            s.depthMask(!0),
-            s.disableVertexAttribArray(i.aPosition),
-            s.disableVertexAttribArray(i.aTexCoord)),
-            e = 0; e < i.actors.length; ++e)
+
+            i.updateCamera();
+            s.bindFramebuffer(s.FRAMEBUFFER, null);
+            s.viewport(0, 0, i.width, i.height);
+            s.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 0);
+            s.clear(s.COLOR_BUFFER_BIT | s.DEPTH_BUFFER_BIT);
+
+            if (i.bgTexture && i.program) {
+                s.useProgram(i.program);
+                s.activeTexture(s.TEXTURE0);
+
+                s.bindTexture(s.TEXTURE_2D, i.bgTexture);
+                s.uniform1i(i.uTexture, 0);
+                s.uniform4f(i.uBGTransform, i.viewer.options.bgPosition[0] || 0, i.viewer.options.bgPosition[1] || 0, i.viewer.options.bgScale[0] || 1, i.viewer.options.bgScale[1] || 1);
+                
+                i.options.backgroundRotatation && (
+                    s.uniform1f(i.uRotation, i.options.backgroundRotatation),
+                    s.uniform2f(i.uResolution, i.width, i.height)
+                );
+
+                s.bindBuffer(s.ARRAY_BUFFER, i.vb);
+                s.bindBuffer(s.ELEMENT_ARRAY_BUFFER, null);
+                s.enableVertexAttribArray(i.aPosition);
+                s.vertexAttribPointer(i.aPosition, 2, s.FLOAT, !1, 16, 0);
+                s.enableVertexAttribArray(i.aTexCoord);
+                s.vertexAttribPointer(i.aTexCoord, 2, s.FLOAT, !1, 16, 8);
+                s.depthMask(!1);
+                s.disable(s.CULL_FACE);
+                s.blendFunc(s.ONE, s.ZERO);
+                s.drawArrays(s.TRIANGLE_STRIP, 0, 4);
+                s.blendFunc(s.SRC_ALPHA, s.ONE_MINUS_SRC_ALPHA);
+                s.enable(s.CULL_FACE);
+                s.depthMask(!0);
+                s.disableVertexAttribArray(i.aPosition);
+                s.disableVertexAttribArray(i.aTexCoord)
+            }
+            
+            for (e = 0; e < i.actors.length; ++e)
                 i.actors[e].a();
-            for (s.viewport(0, 0, i.width, i.height),
-            this.gxDevice.b(),
-            e = 0; e < i.actors.length; ++e)
+
+            s.viewport(0, 0, i.width, i.height);
+            this.gxDevice.b();
+
+            for (e = 0; e < i.actors.length; ++e)
                 i.actors[e].b(!1);
             for (e = 0; e < i.actors.length; ++e)
                 i.actors[e].b(!0);
@@ -13315,10 +13337,12 @@
                         alpha: !0,
                         premultipliedAlpha: !1,
 						preserveDrawingBuffer: true,	// model., 可以拷贝显存.
+                        antialias: true,
                     }) || i.canvas[0].getContext("experimental-webgl", {
                         alpha: !0,
                         premultipliedAlpha: !1,
 						preserveDrawingBuffer: true,	// model., 可以拷贝显存.
+                        antialias: true,
                     }),
                     i.progressBg = $("<div/>", {
                         css: {

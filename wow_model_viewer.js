@@ -8,7 +8,6 @@ class WowModelViewer extends ZamModelViewer {
      * @returns {Array.<string>}
      */
     getListAnimations() {
-        console.log(`getListAnimations`)
         return [...new Set(this.renderer.models[0].aq.map(e => e.l))]
     }
 
@@ -108,11 +107,12 @@ class WowModelViewer extends ZamModelViewer {
     }
 
 
-    forceTime = 700
 
+    forceTime = 0
     loading = 0
     timeout = null
     onCompleted = null
+    pr = Promise.withResolvers()
 
     onBeforeLoadSource() {
         this.loading++
@@ -144,7 +144,7 @@ class WowModelViewer extends ZamModelViewer {
         }
     }
 
-    toCenter(eyeOnTop, eyeLow) {
+    toCenter(eyeOnTop, eyePosition) {
         let canvas = model.renderer.canvas[0]
         let gl = model.renderer.context
         let pixels = new Uint8Array(canvas.width * canvas.height * 4)
@@ -282,14 +282,24 @@ class WowModelViewer extends ZamModelViewer {
                         break
                     }
                 }
+
+                // 半身像.
+                let portraitHeight = height / 2
+
+                // 如果指定了眼睛的位置, 我们要求眼睛至多要在黄金比例 0.382 宽度处.
+                // 例如指定为 1/2 时, 则高度调整为宽度的 1.382.
+                if (eyePosition && eyePosition) {
+                    portraitHeight = Math.max(width * 2.618 * eyePosition, portraitHeight)
+                    portraitHeight = Math.min(portraitHeight, height)
+                }
         
-                let newHeight = Math.max(width, height / (eyeLow ? 1.5 : 2), centerIndex * 2 - top)
+                let newHeight = Math.max(width, portraitHeight, centerIndex * 2 - top)
                 bottom += newHeight - height
                 height = newHeight
             }
         }
 
-        let scaling = Math.min((512 - 8) / width, (512 - 8) / height) * 0.95
+        let scaling = Math.min(512 / width, 512 / height) * 0.95
 
         // 需要调整此位移以和中心点对齐.
         let translationX = 256 - (right + left) / 2
@@ -317,6 +327,19 @@ class WowModelViewer extends ZamModelViewer {
                 
                 model.destroy()
                 resolve(buffer)
+            }, 'image/webp', 0.8)
+        })
+    }
+
+    outputArrayBuffer() {
+        let canvas = model.renderer.canvas[0]
+
+        return new Promise(resolve => {
+            canvas.toBlob(async (blob) => {
+                let arrayBuffer = await blob.arrayBuffer()
+
+                model.destroy()
+                resolve(arrayBuffer)
             }, 'image/webp', 0.8)
         })
     }
