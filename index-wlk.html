@@ -29,10 +29,10 @@
 
 	let displayId = Number(location.hash.slice(1)) || 1350
 	await generateModels(1, `#model_3d`, {type: modelingType.NPC, id: displayId});
-	model.setAzimuth(-Math.PI * (105/180))
-	model.setZenith(Math.PI * (90/180))
+	model.setAzimuth(-Math.PI * (120/180))
+	model.setZenith(Math.PI * (105/180))
 	model.method('resetAnimation')
-	model.forceTime = 1200
+	model.forceTime = 1100
 
 	model.onCompleted = async () => {
 		await model.pr.promise
